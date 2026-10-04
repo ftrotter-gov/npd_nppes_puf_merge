@@ -23,5 +23,7 @@ Then you need to write a Step40_test_merge.py file that uses InLaw  https://pypi
 * The order of the rows (as determined by the NPI identifier that is in the first column) of the old NPPES PUf and the output file are identical, except that the output PUF file could have more rows in any order.
 * There are no repeating NPI records
 
+Step50_rezip.py should take the output.csv, rename it to the same name as the incoming CSV file and then zip up the new but with V3 in the place of V2 in the zip filename. The V2 and V3 zip files should appear next to each other in the ./working_data/ directory
 
+Please make a go.py script that runs all of the Steps and calculates filenames (etc) to pass to the CLI arguements to the other steps. 
 
