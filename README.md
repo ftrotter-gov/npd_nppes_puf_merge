@@ -32,6 +32,7 @@ The NPD (v3) version of the NPPES PUF has been modified to be compatible with th
 * Provider Credential Text - normalized with [FaCeT](https://github.com/ftrotter-gov/FaCeT) and moved to a pipe-sub-delimited list of credentials
 * Provider Other Credential Text - normalized with [FaCeT](https://github.com/ftrotter-gov/FaCeT) and moved to a pipe-sub-delimited list of credentials
 * Authorized Official Credential Text - normalized with [FaCeT](https://github.com/ftrotter-gov/FaCeT) and moved to a pipe-sub-delimited list of credentials
+* The Identifier Data - The Identifier data has been dramatically reduced. The original intent of the identifiers system was to map legacy identifiers to the NPI. There are a handful of legitimate use cases for these mappings (Medicaid IDs in some cases), that will be maintained, but on balance the identifier data is a source of cruft and will be mostly removed from future versions of the file as we retire the identifier mapping functionality as no-longer nessecary. 
 
 #### Normalization with FaCeT
 
