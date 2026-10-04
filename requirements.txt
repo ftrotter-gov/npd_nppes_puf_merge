@@ -1,0 +1,12 @@
+# Step10 - scraping and downloading the monthly NPPES zip
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+
+# Step40 - InLaw / Great Expectations validation of the merged output.
+# InLaw is a thin wrapper around Great Expectations that validates data via a
+# SQLAlchemy engine, so we stage the NPI columns in a local DuckDB file.
+inlaw>=0.1.0
+pandas>=2.0.0
+duckdb>=1.0.0
+duckdb-engine>=0.13.0
+SQLAlchemy>=2.0.0

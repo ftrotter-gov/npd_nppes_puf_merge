@@ -10,6 +10,77 @@ The [National Provider Directory](https://directory.cms.gov)(NPD) url: https://d
 A script which accepts a zip file (or a CSV) of the main NPPES file, alongside a V3 Formatted version of the NPD PUF.
 And outputs a V3 Formatted PUF. 
 
+### Pipeline
+
+| Script | Purpose |
+| --- | --- |
+| `go.py` | Runs every step below, working out the filenames to pass between them. |
+| `Step10_current_nppes_downloader.py` | Finds the current monthly zip on [the CMS NPI Files page](https://download.cms.gov/nppes/NPI_Files.html), downloads it into `./working_data/` and unzips it. |
+| `Step30_merge_puf_files.py` | Streams the NPPES main file and overlays the NPD managed records, writing `./working_data/output.csv` in the V3 format. |
+| `Step40_test_merge.py` | Validates the merged file using [InLaw](https://pypi.org/project/inlaw/) / Great Expectations. |
+| `Step50_rezip.py` | Renames `output.csv` back to the incoming CSV name and zips it as `..._V3.zip`, next to the `..._V2.zip`. |
+
+Supporting modules:
+
+| Script | Purpose |
+| --- | --- |
+| `nppes_v3.py` | Shared definition of the V3 columns, defaults and column offsets. |
+| `inlaw_compat.py` | Compatibility shim for `inlaw` 0.1.0 (see the note below). |
+| `make_mock_npd_file.py` | Regenerates `./mock_data/npd_nppes_file_mockup_initial.csv`. |
+| `make_test_fixture.py` | Builds a small synthetic NPPES zip so the pipeline can be tested without a 1.1 GB download. |
+
+### Quick start
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Full run: download, merge, validate and re-zip
+./go.py
+
+# Re-run against an already downloaded file
+./go.py --skip-download
+```
+
+To exercise the pipeline without downloading the real monthly file:
+
+```bash
+python make_test_fixture.py --rows 5000
+python go.py --skip-download --min-npis 4000 --max-npis 6000
+```
+
+### Validation
+
+`Step40_test_merge.py` stages just the NPI column of the old and new files into
+a local DuckDB database and then runs these InLaw tests:
+
+* The output file has more than 9,700,000 and fewer than 11,000,000 NPIs.
+* Every NPI from the source NPPES PUF is still present.
+* The shared NPIs appear in the same relative order as the source NPPES PUF
+  (the output may contain extra rows anywhere).
+* There are no repeating NPI records.
+
+Memory use is kept well inside a 10 GB laptop: the merge streams row by row
+(~18 MB peak) and the validation pushes all comparison work down into DuckDB
+(~420 MB peak), which spills to disk rather than RAM.
+
+> **Note on the `inlaw` dependency.** Version 0.1.0 installs its modules under a
+> top level `src` package rather than `inlaw`, and its `sql_to_gx_df()` helper
+> calls `context.sources`, which was removed in Great Expectations 1.x.
+> `inlaw_compat.py` works around both issues so the tests can be written in the
+> documented InLaw style. It can be deleted once upstream is fixed.
+
+### Caveats
+
+* The NPD download link does not exist yet, so the merge reads the mock file in
+  `./mock_data/`. Two of its three NPIs are real and active, so they exercise the
+  replace path; the third (`1234567893`) is synthetic and absent from NPPES, so it
+  exercises the append-at-end path.
+* FaCeT normalisation is represented by pre-normalised values in the mock file.
+  No FaCeT normalisation is performed at merge time, because only NPD managed
+  records carry these improvements and they arrive already normalised.
+
 ## V3 NPPES File Format
 
 ### Additional columns
