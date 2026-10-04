@@ -1,77 +1,51 @@
-# {{ cookiecutter.project_name }}
+# NPD NPPES PUF Merge
 
-{{ cookiecutter.project_description }}
+Script to merge the NPPES and NPD versions of the NPPES PUF File.
+Results in a single NPPES PUF that uses the v3 of the PUF.
 
-## About the Project
+The [National Provider Directory](https://directory.cms.gov)(NPD) url: https://directory.cms.gov is the system that will soon replace NPPES for the management of NPI records. In order to ensure a smooth transition between the two systems, the NPPES PUF will be modified to support the transition, as well as to support new features of the NPI management process under NPD. 
 
-**{project_statement}**
+## Repo Contents
 
-<!---
-### Project Vision
-**{project vision}** -->
+A script which accepts a zip file (or a CSV) of the main NPPES file, alongside a V3 Formatted version of the NPD PUF.
+And outputs a V3 Formatted PUF. 
 
-<!--
-### Project Mission
-**{project mission}** -->
+## V3 NPPES File Format
 
-<!--
-### Agency Mission
-TODO: Good to include since this is an agency-led project -->
+### Additional columns
 
-<!--
-### Team Mission
-TODO: Good to include since this is an agency-led project -->
+The following additional columns are added to the end of the main nppes file
 
-<!--
-## Core Team
+* npi_managed_by = only two string options “npd” or “nppes”. Default is “nppes”
+* npi_activation_status = ‘active’ / ‘deactive’ (and future values of ‘soon_to_be_deactivated’). Default value mirrors activation status of the current record.
+* npi_activation_change_reason_list = field containing a pipe-delimited list of reasons what justifies a future change. Could include ‘Data Out of Date’, ‘Verification Required’, or simply ‘Login for specific message’ etc etc. Default value is blank
+* npi_activation_future_change_date = the date which a field might change, default value of ‘0000-00-00’ for all values for now. 
+* npi_fhir_url = an https link to the FHIR API record for the NPI
 
-A list of core team members responsible for the code and documentation in this repository can be found in [COMMUNITY.md](COMMUNITY.md).
--->
+### Data Improvements
 
-<!--
-## Repository Structure
+For the time being only data managed by NPD (npi_managed_by=npd) will contain these data improvements. It is an open question about whether these data improvements will be back-ported to NPPES NPI managed records.
 
-TODO: Including the repository structure helps viewers quickly understand the project layout. Using the "tree -d" command can be a helpful way to generate this information, but, be sure to update it as the project evolves and changes over time.
+The NPD (v3) version of the NPPES PUF has been modified to be compatible with the 
 
-**{list directories and descriptions}**
+* Employer Identification Number (EIN) - modified to point to the uuid of the FHIR organization corresponding to the EIN of the legal entity in question
+* Provider Credential Text - normalized with [FaCeT](https://github.com/ftrotter-gov/FaCeT) and moved to a pipe-sub-delimited list of credentials
+* Provider Other Credential Text - normalized with [FaCeT](https://github.com/ftrotter-gov/FaCeT) and moved to a pipe-sub-delimited list of credentials
+* Authorized Official Credential Text - normalized with [FaCeT](https://github.com/ftrotter-gov/FaCeT) and moved to a pipe-sub-delimited list of credentials
 
-TODO: Add a 'table of contents" for your documentation. Tier 0/1 projects with simple README.md files without many sections may or may not need this, but it is still extremely helpful to provide "bookmark" or "anchor" links to specific sections of your file to be referenced in tickets, docs, or other communication channels.
+#### Normalization with FaCeT
 
-**{list of .md at top directory and descriptions}**
+[FaCeT](https://github.com/ftrotter-gov/FaCeT) is a normalized list of clinical and clinical-adjacent credentials. Using this allows for the correction of NPPES credentials into a reliable format. Currently these credentials are mere assertions. In the future, NPD will begin to conduct some form of credential verification. For the time being, credentials will be consistently expressed using FaCeT representations. 
 
--->
+For instance, the following NPPES entered credential values will be converted as: 
 
-<!---
-## Local Development
+* "M.D. PHd" -> " MD | PHD "
+* "M. D phd" -> " MD | PHD "
+* "M. D. P.H.D" -> " MD | PHD "
 
- TODO - with example below:
-This project is monorepo with several apps. Please see the [api](./api/README.md) and [frontend](./frontend/README.md) READMEs for information on spinning up those projects locally. Also see the project [documentation](./documentation) for more info.
--->
+Please see [The MD Problem in NPPES](https://www.fredtrotter.com/the-md-problem-in-nppes/) for discussion about the issues with the previous approach. 
 
-<!--
-## Coding Style and Linters
 
-TODO - Add the repo's linting and code style guidelines
-
-Each application has its own linting and testing guidelines. Lint and code tests are run on each commit, so linters and tests should be run locally before committing.
- -->
-
-<!---
-## Branching Model
-
-TODO - with example below:
-This project follows [trunk-based development](https://trunkbaseddevelopment.com/), which means:
-
-* Make small changes in [short-lived feature branches](https://trunkbaseddevelopment.com/short-lived-feature-branches/) and merge to `main` frequently.
-* Be open to submitting multiple small pull requests for a single ticket (i.e. reference the same ticket across multiple pull requests).
-* Treat each change you merge to `main` as immediately deployable to production. Do not merge changes that depend on subsequent changes you plan to make, even if you plan to make those changes shortly.
-* Ticket any unfinished or partially finished work.
-* Tests should be written for changes introduced, and adhere to the text percentage threshold determined by the project.
-
-This project uses **continuous deployment** using [Github Actions](https://github.com/features/actions) which is configured in the [./github/workflows](.github/workflows) directory.
-
-Pull-requests are merged to `main` and the changes are immediately deployed to the development environment. Releases are created to push changes to production.
--->
 
 ## Policies
 
