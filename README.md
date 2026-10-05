@@ -25,7 +25,6 @@ Supporting modules:
 | Script | Purpose |
 | --- | --- |
 | `nppes_v3.py` | Shared definition of the V3 columns, defaults and column offsets. |
-| `inlaw_compat.py` | Compatibility shim for `inlaw` 0.1.0 (see the note below). |
 | `make_mock_npd_file.py` | Regenerates `./mock_data/npd_nppes_file_mockup_initial.csv`. |
 | `make_test_fixture.py` | Builds a small synthetic NPPES zip so the pipeline can be tested without a 1.1 GB download. |
 
@@ -65,11 +64,12 @@ Memory use is kept well inside a 10 GB laptop: the merge streams row by row
 (~18 MB peak) and the validation pushes all comparison work down into DuckDB
 (~420 MB peak), which spills to disk rather than RAM.
 
-> **Note on the `inlaw` dependency.** Version 0.1.0 installs its modules under a
-> top level `src` package rather than `inlaw`, and its `sql_to_gx_df()` helper
-> calls `context.sources`, which was removed in Great Expectations 1.x.
-> `inlaw_compat.py` works around both issues so the tests can be written in the
-> documented InLaw style. It can be deleted once upstream is fixed.
+> **Note on the `inlaw` dependency.** `inlaw>=0.2.0` is required. Version 0.1.0
+> installed its modules under a top level `src` package rather than `inlaw`, and
+> its `sql_to_gx_df()` helper called `context.sources`, which was removed in
+> Great Expectations 1.x. Both are fixed in 0.2.0, which also renames the test
+> `run(engine, config=...)` parameter to `settings=` (`config=` still works but
+> is deprecated).
 
 ### Caveats
 

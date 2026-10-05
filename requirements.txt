@@ -5,7 +5,10 @@ beautifulsoup4>=4.12.0
 # Step40 - InLaw / Great Expectations validation of the merged output.
 # InLaw is a thin wrapper around Great Expectations that validates data via a
 # SQLAlchemy engine, so we stage the NPI columns in a local DuckDB file.
-inlaw>=0.1.0
+#
+# 0.2.0 is the minimum: 0.1.0 installed itself as a top level "src" package and
+# its sql_to_gx_df() targeted the pre-1.0 Great Expectations API.
+inlaw>=0.2.0
 pandas>=2.0.0
 duckdb>=1.0.0
 duckdb-engine>=0.13.0

@@ -35,8 +35,7 @@ from typing import List, Optional
 import duckdb
 from sqlalchemy import create_engine
 
-# inlaw_compat re-exports InLaw and patches it for Great Expectations 1.x.
-from inlaw_compat import InLaw, InlawError
+from inlaw import InLaw, InlawError
 
 REPO_ROOT = Path(__file__).resolve().parent
 DEFAULT_OUTPUT_CSV = REPO_ROOT / "working_data" / "output.csv"
@@ -105,12 +104,12 @@ class OutputNpiCountIsPlausible(InLaw):
     title = "Output file NPI count is within the expected range"
 
     @staticmethod
-    def run(engine, config: dict | None = None):
-        config = config or {}
-        # Read the bounds from config so that command line overrides are
+    def run(engine, settings=None):
+        settings = settings or {}
+        # Read the bounds from settings so that command line overrides are
         # honoured even though InLaw re-imports this file to discover tests.
-        minimum = config.get("MIN_OUTPUT_NPIS", MIN_OUTPUT_NPIS)
-        maximum = config.get("MAX_OUTPUT_NPIS", MAX_OUTPUT_NPIS)
+        minimum = settings.get("MIN_OUTPUT_NPIS", MIN_OUTPUT_NPIS)
+        maximum = settings.get("MAX_OUTPUT_NPIS", MAX_OUTPUT_NPIS)
 
         sql = f"SELECT COUNT(*) AS npi_count FROM {NEW_TABLE}"
         gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
@@ -136,7 +135,7 @@ class NoRepeatingNpiRecords(InLaw):
     title = "There are no repeating NPI records in the output file"
 
     @staticmethod
-    def run(engine, config: dict | None = None):
+    def run(engine, settings=None):
         # Return one row per NPI that occurs more than once. An empty result
         # set means the expectation trivially holds.
         sql = f"""
@@ -167,7 +166,7 @@ class NpiOrderIsPreserved(InLaw):
     )
 
     @staticmethod
-    def run(engine, config: dict | None = None):
+    def run(engine, settings=None):
         # Join the two files on NPI, walk the result in old-file order and
         # check that the new-file position never decreases. Any decrease means
         # two shared NPIs were re-ordered relative to one another. Extra rows
@@ -214,7 +213,7 @@ class EveryOldNpiSurvived(InLaw):
     title = "Every NPI in the old NPPES PUF is present in the output file"
 
     @staticmethod
-    def run(engine, config: dict | None = None):
+    def run(engine, settings=None):
         sql = f"""
             SELECT COUNT(*) AS missing_count
             FROM (
@@ -328,7 +327,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         results = InLaw.run_all(
             engine=engine,
             inlaw_files=[__file__],
-            config={
+            settings={
                 "OLD_TABLE": OLD_TABLE,
                 "NEW_TABLE": NEW_TABLE,
                 "MIN_OUTPUT_NPIS": args.min_npis,
